@@ -1,0 +1,60 @@
+package com.bank.dao;
+import com.bank.model.Customer;
+import com.bank.util.DBConnection;
+import java.sql.*;
+
+public class CustomerDAO {
+
+    public void createCustomer(Customer c) throws Exception {
+        Connection con = DBConnection.getConnection();
+
+        PreparedStatement ps = con.prepareStatement(
+            "INSERT INTO customers(name,pin,account_type,balance) VALUES(?,?,?,?)"
+        );
+
+        ps.setString(1, c.getName());
+        ps.setInt(2, c.getPin());
+        ps.setString(3, c.getAccountType());
+        ps.setDouble(4, c.getBalance());
+
+        ps.executeUpdate();
+    }
+
+    public Customer getCustomer(int accNo, int pin) throws Exception {
+        Connection con = DBConnection.getConnection();
+
+        PreparedStatement ps = con.prepareStatement(
+            "SELECT * FROM customers WHERE account_no=? AND pin=?"
+        );
+
+        ps.setInt(1, accNo);
+        ps.setInt(2, pin);
+
+        ResultSet rs = ps.executeQuery();
+
+        if(rs.next()) {
+            Customer c = new Customer(
+                rs.getString("name"),
+                rs.getInt("pin"),
+                rs.getString("account_type"),
+                rs.getDouble("balance")
+            );
+            c.setAccountNo(rs.getInt("account_no"));
+            return c;
+        }
+        return null;
+    }
+
+    public void updateBalance(int accNo, double newBalance) throws Exception {
+        Connection con = DBConnection.getConnection();
+
+        PreparedStatement ps = con.prepareStatement(
+            "UPDATE customers SET balance=? WHERE account_no=?"
+        );
+
+        ps.setDouble(1, newBalance);
+        ps.setInt(2, accNo);
+
+        ps.executeUpdate();
+    }
+}

@@ -1,0 +1,23 @@
+public class Customer {
+    private int accountNo;
+    private String name;
+    private int pin;
+    private String accountType;
+    private double balance;
+
+    public Customer(String name, int pin, String accountType, double balance) {
+        this.name = name;
+        this.pin = pin;
+        this.accountType = accountType;
+        this.balance = balance;
+    }
+
+    public int getAccountNo() { return accountNo; }
+    public void setAccountNo(int accountNo) { this.accountNo = accountNo; }
+
+    public String getName() { return name; }
+    public int getPin() { return pin; }
+    public String getAccountType() { return accountType; }
+    public double getBalance() { return balance; }
+    public void setBalance(double balance) { this.balance = balance; }
+}

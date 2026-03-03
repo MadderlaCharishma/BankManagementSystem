@@ -1,0 +1,76 @@
+package com.bank.service;
+
+import java.util.List;
+
+import com.bank.dao.CustomerDAO;
+import com.bank.dao.TransactionDAO;
+import com.bank.exception.InsufficientBalanceException;
+import com.bank.model.Customer;
+
+public class BankService {
+
+    private CustomerDAO customerDAO = new CustomerDAO();
+    private TransactionDAO transactionDAO = new TransactionDAO();
+
+    // ================= DEPOSIT =================
+    public void deposit(int accNo, int pin, double amount) throws Exception {
+
+        Customer c = customerDAO.getCustomer(accNo, pin);
+
+        if (c == null)
+            throw new Exception("Invalid Account/PIN");
+
+        if (amount <= 0)
+            throw new Exception("Amount must be greater than 0");
+
+        double newBalance = c.getBalance() + amount;
+
+        customerDAO.updateBalance(accNo, newBalance);
+        transactionDAO.saveTransaction(accNo, "DEPOSIT", amount);
+    }
+
+    // ================= WITHDRAW =================
+    public void withdraw(int accNo, int pin, double amount)
+            throws Exception, InsufficientBalanceException {
+
+        Customer c = customerDAO.getCustomer(accNo, pin);
+
+        if (c == null)
+            throw new Exception("Invalid Account/PIN");
+
+        if (amount <= 0)
+            throw new Exception("Amount must be greater than 0");
+
+        double currentBalance = c.getBalance();
+
+        // Minimum balance rule
+        if (c.getAccountType().equalsIgnoreCase("Savings")
+                && (currentBalance - amount) < 1000)
+            throw new InsufficientBalanceException(
+                    "Savings account must maintain minimum balance of 1000");
+
+        if (amount > currentBalance)
+            throw new InsufficientBalanceException("Insufficient Balance");
+
+        double newBalance = currentBalance - amount;
+
+        customerDAO.updateBalance(accNo, newBalance);
+        transactionDAO.saveTransaction(accNo, "WITHDRAW", amount);
+    }
+
+    // ================= CHECK BALANCE =================
+    public double checkBalance(int accNo, int pin) throws Exception {
+
+        Customer c = customerDAO.getCustomer(accNo, pin);
+
+        if (c == null)
+            throw new Exception("Invalid Account/PIN");
+
+        return c.getBalance();
+    }
+
+    // ================= TRANSACTION HISTORY =================
+    public List<String[]> getTransactionHistory(int accNo) {
+        return transactionDAO.getTransactions(accNo);
+    }
+}

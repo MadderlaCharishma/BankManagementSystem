@@ -1,0 +1,56 @@
+package com.bank.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.bank.util.DBConnection;
+
+public class TransactionDAO {
+
+    // Save transaction (Deposit / Withdraw)
+    public void saveTransaction(int accNo, String type, double amount) {
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(
+                     "INSERT INTO transactions(account_no, type, amount) VALUES(?,?,?)")) {
+
+            ps.setInt(1, accNo);
+            ps.setString(2, type);
+            ps.setDouble(3, amount);
+            ps.executeUpdate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Get transaction history
+    public List<String[]> getTransactions(int accNo) {
+
+        List<String[]> list = new ArrayList<>();
+
+        try (Connection con = DBConnection.getConnection();
+             PreparedStatement ps = con.prepareStatement(
+                     "SELECT type, amount, date FROM transactions WHERE account_no=? ORDER BY date DESC")) {
+
+            ps.setInt(1, accNo);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                list.add(new String[]{
+                        rs.getString("type"),
+                        rs.getString("amount"),
+                        rs.getString("date")
+                });
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+}

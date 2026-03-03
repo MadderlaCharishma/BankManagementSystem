@@ -1,0 +1,129 @@
+Package com.bank.ui;
+
+import javax.swing.*;
+import java.awt.*;
+import java.util.List;
+
+import com.bank.exception.InsufficientBalanceException;
+import com.bank.service.BankService;
+
+public class MainUI extends JFrame {
+
+    private JTextField accField, pinField, amountField;
+    private BankService service = new BankService();
+
+    public MainUI() {
+
+        setTitle("Bank Management System");
+        setSize(450, 300);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        setLayout(new GridLayout(6, 2, 10, 10));
+
+        add(new JLabel("Account Number:"));
+        accField = new JTextField();
+        add(accField);
+
+        add(new JLabel("PIN:"));
+        pinField = new JTextField();
+        add(pinField);
+
+        add(new JLabel("Amount:"));
+        amountField = new JTextField();
+        add(amountField);
+
+        JButton depositBtn = new JButton("Deposit");
+        JButton withdrawBtn = new JButton("Withdraw");
+        JButton balanceBtn = new JButton("Check Balance");
+        JButton historyBtn = new JButton("View Transactions");
+
+        add(depositBtn);
+        add(withdrawBtn);
+        add(balanceBtn);
+        add(historyBtn);
+
+        depositBtn.addActionListener(e -> deposit());
+        withdrawBtn.addActionListener(e -> withdraw());
+        balanceBtn.addActionListener(e -> checkBalance());
+        historyBtn.addActionListener(e -> viewTransactions());
+
+        setVisible(true);
+    }
+
+    private void deposit() {
+        try {
+            int accNo = Integer.parseInt(accField.getText());
+            int pin = Integer.parseInt(pinField.getText());
+            double amount = Double.parseDouble(amountField.getText());
+
+            service.deposit(accNo, pin, amount);
+            JOptionPane.showMessageDialog(this, "Deposit Successful");
+
+        } catch (Exception e) {
+ JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+    }
+
+    private void withdraw() {
+        try {
+            int accNo = Integer.parseInt(accField.getText());
+            int pin = Integer.parseInt(pinField.getText());
+            double amount = Double.parseDouble(amountField.getText());
+
+            service.withdraw(accNo, pin, amount);
+            JOptionPane.showMessageDialog(this, "Withdraw Successful");
+
+        } catch (InsufficientBalanceException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+    }
+
+    private void checkBalance() {
+        try {
+            int accNo = Integer.parseInt(accField.getText());
+            int pin = Integer.parseInt(pinField.getText());
+
+            double balance = service.checkBalance(accNo, pin);
+            JOptionPane.showMessageDialog(this,
+                    "Current Balance: " + balance);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+    }
+
+    private void viewTransactions() {
+
+        try {
+            int accNo = Integer.parseInt(accField.getText());
+
+            List<String[]> list =
+                    service.getTransactionHistory(accNo);
+
+            String[] columns = {"Type", "Amount", "Date"};
+            String[][] data = new String[list.size()][3];
+
+            for (int i = 0; i < list.size(); i++)
+                data[i] = list.get(i);
+
+            JTable table = new JTable(data, columns);
+            JScrollPane pane = new JScrollPane(table);
+
+            JFrame frame = new JFrame("Transaction History");
+            frame.add(pane);
+            frame.setSize(500, 300);
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, e.getMessage());
+        }
+    }
+
+    public static void main(String[] args) {
+        new MainUI();
+    }
+}
